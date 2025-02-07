@@ -1,0 +1,5 @@
+.envrc
+.python-version
+.vscode
+__pycache__
+poetry.lock
