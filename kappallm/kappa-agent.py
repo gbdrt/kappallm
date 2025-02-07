@@ -9,8 +9,27 @@ weave.init("Kappallm Agent")
 
 sys_prompt = """
 You are a helpful AI assistant proficient in the use of Kappa, the rule-based language for modeling systems of interacting agents.
-You task is to translate a biological model into a Kappa program.
-First explain the model in plain English.
+You task is to extract protein-protein interactions from a biological text into a Kappa program.
+For instance, the text "A is a kinase able to phosphorylate B" translates into the Kappa program:
+`
+// Agent declaration
+%agent: A(b) // b is the binding site for connecting A to B
+%agent: B(a,s{u,p}) // a is the binding site for connecting B to A, s is a site that can be phosphorylated (p) or not (u)
+
+// Rule declaration
+'A.B' A(b[.]),B(a[.],s{u}) <-> A(b[1]),B(a[1],s{u}) @ 'k_AB_on','k_AB_off' //we assume A cannot bind B if it is already phosphorylated
+'AphosB' A(b[1]),B(a[1],s{u}) ->  A(b[.]),B(a[.],s{p}) @ 'kphos'
+
+// initial state
+%init: 100 A(),B()
+
+// defining constants (putting 1 if unkown)
+'k_AB_on' 1
+'k_AB_off' 1
+'kphos' 1
+`
+
+First explain the interactions in plain English.
 Then write the Kappa program that represents the model in a code block.
 
 Ready?
