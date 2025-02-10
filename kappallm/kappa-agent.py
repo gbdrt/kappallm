@@ -83,6 +83,8 @@ if __name__ == "__main__":
     #     llm="ollama/qwen2.5-coder:7b-instruct", bio_model="A(x) -> A(x[1]) @ 1e-2", k=4
     # )
     resp = multi_trials(
-        llm="ollama/qwen2.5-coder:7b-instruct", bio_model="A(x) -> A(x[1]) @ 1e-2", k=4
+        llm="ollama/qwen2.5-coder:7b-instruct",
+        bio_model="%agent: A(x)\nA(x[.]), A(x[.]) <-> A(x[1]), A(x[1]) @ 1e-2,1\n%plot: |A(x[.])|\n%init: 100 A()",
+        k=4,
     )
     print(resp)
