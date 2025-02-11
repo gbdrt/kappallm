@@ -3,6 +3,9 @@ import kappy
 from kappy.kappa_common import KappaError
 import re
 import textwrap
+import weave
+
+weave.init("Kappallm Agent")
 
 sys_prompt = """
 You are a helpful AI assistant proficient in the use of Kappa, the rule-based language for modeling systems of interacting agents.
@@ -34,6 +37,7 @@ def validate(code: str):
     kappa_client.project_parse()
 
 
+@weave.op()
 def one_shot(llm: str, prompt: str) -> str:
     resp = completion(
         model=llm,
@@ -46,6 +50,7 @@ def one_shot(llm: str, prompt: str) -> str:
     return code
 
 
+@weave.op()
 def pass_at_k(llm: str, bio_model: str, k: int) -> str | None:
     for _ in range(k):
         prompt = usr_prompt.format(bio_model=bio_model)
@@ -59,6 +64,7 @@ def pass_at_k(llm: str, bio_model: str, k: int) -> str | None:
     print(f"Could not find model after {k} iterations")
 
 
+@weave.op()
 def multi_trials(llm: str, bio_model: str, k: int) -> str:
     trials = []
     for _ in range(k):
