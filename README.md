@@ -11,4 +11,4 @@ Then run the agent with:
 $ python kappallm/kappa-agent.py
 ```
 
-Tested with Python 3.12.2
+Tested with Python 3.10 and 3.12
