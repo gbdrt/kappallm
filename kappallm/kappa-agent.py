@@ -4,14 +4,13 @@ from kappy.kappa_common import KappaError
 import re
 import textwrap
 import weave
+import os
 
 weave.init("Kappallm Agent")
 
-sys_prompt = """
-You are a helpful AI assistant proficient in the use of Kappa, the rule-based language for modeling systems of interacting agents.
-You task is to extract protein-protein interactions from a biological text into a Kappa program.
-For instance, the text "A is a kinase able to phosphorylate B" translates into the Kappa program:
-`
+pwd = os.getcwd()
+
+kappa_example = """
 // Agent declaration
 %agent: A(b) // b is the binding site for connecting A to B
 %agent: B(a,s{u,p}) // a is the binding site for connecting B to A, s is a site that can be phosphorylated (p) or not (u)
@@ -24,12 +23,21 @@ For instance, the text "A is a kinase able to phosphorylate B" translates into t
 %init: 100 A(),B()
 
 // defining constants (putting 1 if unkown)
-'k_AB_on' 1
-'k_AB_off' 1
-'kphos' 1
-`
+%var: 'k_AB_on' 1
+%var: 'k_AB_off' 1
+%var: 'kphos' 1
+"""
 
-First explain the interactions in plain English.
+kappa_manual = ""
+with open(os.getcwd()+"/prompting/kappa-manual.md", "r") as file:
+    kappa_manual = file.read()
+
+sys_prompt = """
+- You are a helpful AI assistant proficient in the use of Kappa, the rule-based language for modeling systems of interacting agents which is described in the following manual:
+
+{kappa_manual}
+
+- Your task is to extract protein-protein interactions from a biological text into a Kappa program. First explain the interactions in plain English.
 Then write the Kappa program that represents the model in a code block.
 
 Ready?
@@ -61,7 +69,7 @@ def one_shot(llm: str, prompt: str) -> str:
     resp = completion(
         model=llm,
         messages=[
-            {"content": sys_prompt, "role": "system"},
+            {"content": sys_prompt.format(kappa_manual=kappa_manual), "role": "system"},
             {"content": prompt, "role": "user"},
         ],
     )
@@ -104,12 +112,15 @@ def multi_trials(llm: str, bio_model: str, k: int) -> str:
 
 
 if __name__ == "__main__":
+    validate(kappa_example)
     # resp = pass_at_k(
     #     llm="ollama/qwen2.5-coder:7b-instruct", bio_model="A(x) -> A(x[1]) @ 1e-2", k=4
     # )
+    # resp = multi_trials(
+    #     llm="ollama/qwen2.5-coder:7b-instruct", bio_model="K is a kinase able to phosphorylate S", k=4
+    # )
     resp = multi_trials(
-        llm="ollama/qwen2.5-coder:7b-instruct",
-        bio_model="%agent: A(x)\nA(x[.]), A(x[.]) <-> A(x[1]), A(x[1]) @ 1e-2,1\n%plot: |A(x[.])|\n%init: 100 A()",
-        k=4,
+        llm="ollama/qwen2.5-coder:7b-instruct", bio_model="K is a kinase able to phosphorylate S, and P is a well known phosphatase able to act on the product", k=4
     )
+    
     print(resp)
